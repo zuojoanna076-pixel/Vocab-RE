@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>📚 左老师课堂工具</title>
+<style>
+  :root {
+    --bg: #faf8f5;
+    --card: #ffffff;
+    --text: #2d2d2d;
+    --text2: #888;
+    --accent: #6c5ce7;
+    --accent2: #a29bfe;
+    --pink: #fd79a8;
+    --green: #00b894;
+    --border: #eee;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+  .hero {
+    background: linear-gradient(160deg, #6c5ce7 0%, #a29bfe 50%, #fd79a8 100%);
+    color: #fff;
+    padding: 48px 24px 36px;
+    text-align: center;
+  }
+  .hero-icon { font-size: 3rem; margin-bottom: 8px; }
+  .hero-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
+  .hero-sub { font-size: 0.95rem; opacity: 0.8; margin-top: 6px; font-weight: 600; }
+  .container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+  .tool-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    color: var(--text);
+    border: 1px solid var(--border);
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .tool-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 12px rgba(108,92,231,0.1);
+  }
+  .tool-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+  }
+  .tool-icon.purple { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+  .tool-icon.green { background: linear-gradient(135deg, #00b894, #55efc4); }
+  .tool-icon.orange { background: linear-gradient(135deg, #e17055, #fab1a0); }
+  .tool-icon.blue { background: linear-gradient(135deg, #0984e3, #74b9ff); }
+  .tool-info { flex: 1; min-width: 0; }
+  .tool-name { font-size: 1.1rem; font-weight: 700; }
+  .tool-desc { font-size: 0.82rem; color: var(--text2); margin-top: 3px; line-height: 1.4; }
+  .tool-arrow { color: var(--text2); font-size: 1.2rem; flex-shrink: 0; }
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.75rem;
+    color: var(--text2);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-new { background: #ffeaa7; color: #856404; }
+  .badge-hot { background: #fab1a0; color: #d63031; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-icon">📚</div>
+  <div class="hero-title">左老师课堂工具</div>
+  <div class="hero-sub">离线可用 · 手机直达 · 随时练习</div>
+</div>
+
+<div class="container">
+  <div class="section-label">🎯 字母与词汇</div>
+
+  <a class="tool-card" href="./letter-hunt-game.html">
+    <div class="tool-icon purple">🔍</div>
+    <div class="tool-info">
+      <div class="tool-name">字母寻宝<span class="badge badge-new">NEW</span></div>
+      <div class="tool-desc">在字母堆中找出目标大小写，训练字母认知与辨析</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </a>
+
+  <a class="tool-card" href="./vocab-re.html">
+    <div class="tool-icon green">📖</div>
+    <div class="tool-info">
+      <div class="tool-name">单词乐园</div>
+      <div class="tool-desc">Reading Explorer 配套单词练习，离线刷词神器</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </a>
+
+  <div class="section-label" style="margin-top:20px;">🧩 更多工具</div>
+
+  <div class="tool-card" style="opacity:0.45; pointer-events:none;">
+    <div class="tool-icon orange">🧩</div>
+    <div class="tool-info">
+      <div class="tool-name">拼字游戏</div>
+      <div class="tool-desc">即将上线…</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </div>
+
+  <div class="tool-card" style="opacity:0.45; pointer-events:none;">
+    <div class="tool-icon blue">🎧</div>
+    <div class="tool-info">
+      <div class="tool-name">听力闯关</div>
+      <div class="tool-desc">即将上线…</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </div>
+</div>
+
+<div class="footer">Made with ❤️ by 左老师教研</div>
+
+</body>
+</html>
