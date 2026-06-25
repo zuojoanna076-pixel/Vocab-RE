@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🔍 字母寻宝 · Letter Hunt A-Z</title>
+<style>
+  :root {
+    --bg: #faf8f5;
+    --card: #ffffff;
+    --text: #2d2d2d;
+    --text2: #888;
+    --accent: #6c5ce7;
+    --accent2: #a29bfe;
+    --green: #00b894;
+    --red: #e17055;
+    --gold: #fdcb6e;
+    --border: #eee;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh; height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .screen { display: none; height: 100%; flex-direction: column; }
+  .screen.active { display: flex; }
+  #home {
+    align-items: center; justify-content: center;
+    padding: 40px 24px; text-align: center;
+    background: linear-gradient(160deg, #6c5ce7 0%, #a29bfe 50%, #fd79a8 100%);
+    color: #fff;
+  }
+  .home-icon { font-size: 4rem; margin-bottom: 12px; }
+  .home-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
+  .home-sub { font-size: 1.05rem; opacity: 0.85; margin-top: 4px; font-weight: 600; }
+  .home-desc { margin-top: 24px; font-size: 0.9rem; opacity: 0.75; line-height: 1.7; max-width: 320px; }
+  .mode-group { margin-top: 32px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .mode-chip {
+    padding: 10px 20px; border-radius: 30px;
+    border: 2px solid rgba(255,255,255,0.4);
+    background: transparent; color: #fff;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .mode-chip.on { background: rgba(255,255,255,0.25); border-color: #fff; }
+  .btn-go {
+    margin-top: 36px; padding: 16px 56px;
+    border: none; border-radius: 50px;
+    background: #fff; color: var(--accent);
+    font-size: 1.25rem; font-weight: 800;
+    cursor: pointer; box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    transition: transform 0.15s;
+  }
+  .btn-go:active { transform: scale(0.95); }
+  #game { background: var(--bg); }
+  .game-header {
+    padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
+    background: var(--card); border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .hdr-left { display: flex; align-items: center; gap: 10px; }
+  .hdr-back {
+    width: 36px; height: 36px; border: none; border-radius: 50%;
+    background: var(--bg); font-size: 1.1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hdr-letter { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+  .hdr-right { display: flex; align-items: center; gap: 14px; font-size: 0.85rem; font-weight: 700; }
+  .hdr-right .star { color: var(--gold); }
+  .progress-bar { height: 4px; background: var(--border); flex-shrink: 0; }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px; transition: width 0.4s;
+  }
+  .play-area { flex: 1; position: relative; overflow: hidden; }
+  .center-target { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
+  .center-circle {
+    width: clamp(130px, 35vw, 180px); height: clamp(130px, 35vw, 180px);
+    border-radius: 50%; background: var(--card); border: 3px solid #ddd;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 4px 24px rgba(108,92,231,0.12);
+  }
+  .center-U { font-size: clamp(3.2rem, 12vw, 5.2rem); font-weight: 800; color: var(--accent); line-height: 1; }
+  .center-L { font-size: clamp(2.6rem, 9vw, 4rem); font-weight: 800; color: var(--accent2); line-height: 1; margin-top: -2px; }
+  .center-label {
+    position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
+    font-size: 0.75rem; color: var(--text2); font-weight: 600; white-space: nowrap;
+  }
+  .bubble {
+    position: absolute; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; cursor: pointer; font-weight: 800; color: #666;
+    z-index: 5; transition: transform 0.12s; -webkit-transition: transform 0.12s;
+  }
+  .bubble:active { transform: scale(0.9) !important; }
+  .bubble.up { background: #f0ece6; width: 68px; height: 68px; font-size: 2rem; }
+  .bubble.lo { background: #eae5dd; width: 58px; height: 58px; font-size: 1.65rem; }
+  .bubble.hit {
+    background: var(--green) !important; color: #fff !important;
+    animation: pop 0.35s ease-out; pointer-events: none; z-index: 20;
+  }
+  @keyframes pop { 0% { transform: scale(0.6); } 50% { transform: scale(1.3); } 100% { transform: scale(1.15); } }
+  .bubble.miss { background: var(--red) !important; color: #fff !important; animation: wiggle 0.35s ease; }
+  @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px) rotate(-2deg); } 75% { transform: translateX(6px) rotate(2deg); } }
+  .status-bar {
+    padding: 10px 20px calc(10px + env(safe-area-inset-bottom));
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--card); border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+  .status-found { font-size: 0.95rem; font-weight: 700; }
+  .status-found b { color: var(--green); font-size: 1.15rem; }
+  .status-btns { display: flex; gap: 8px; }
+  .status-btn {
+    padding: 8px 16px; border: none; border-radius: 20px;
+    font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: transform 0.1s;
+  }
+  .status-btn:active { transform: scale(0.93); }
+  .btn-hint { background: #fff3cd; color: #856404; }
+  .btn-hint.off { opacity: 0.35; pointer-events: none; }
+  .btn-skip { background: var(--bg); color: var(--text2); }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 24px; padding: 36px 28px;
+    text-align: center; max-width: 340px; width: 88%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: modal-in 0.35s ease-out;
+  }
+  @keyframes modal-in { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+  .modal-letter {
+    font-size: 4.5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), #fd79a8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .modal-msg { font-size: 1.15rem; font-weight: 700; color: var(--text2); margin: 8px 0 20px; }
+  .modal-stars { font-size: 1.6rem; margin-bottom: 12px; }
+  .btn-modal {
+    padding: 14px 40px; border: none; border-radius: 30px;
+    background: linear-gradient(135deg, var(--accent), #fd79a8);
+    color: #fff; font-size: 1.1rem; font-weight: 800;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(108,92,231,0.3); transition: transform 0.1s;
+  }
+  .btn-modal:active { transform: scale(0.95); }
+  .sparkle {
+    position: fixed; pointer-events: none; z-index: 200;
+    font-size: 1.4rem; animation: fly 0.8s ease-out forwards;
+  }
+  @keyframes fly { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0.3); opacity: 0; } }
+  .final-score { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 8px 0; }
+  @media (max-width: 380px) {
+    .bubble.up { width: 60px; height: 60px; font-size: 1.75rem; }
+    .bubble.lo { width: 52px; height: 52px; font-size: 1.45rem; }
+  }
+</style>
+</head>
+<body>
+<div id="home" class="screen active">
+  <div class="home-icon">🔍</div>
+  <div class="home-title">字母寻宝</div>
+  <div class="home-sub">Letter Hunt A-Z</div>
+  <div class="home-desc">在散落的字母堆中<br>找出目标大小写字母<br>训练字母认知与辨析能力</div>
+  <div class="mode-group">
+    <button class="mode-chip on" data-m="both" onclick="pickMode('both')">大小写</button>
+    <button class="mode-chip" data-m="up" onclick="pickMode('up')">仅大写</button>
+    <button class="mode-chip" data-m="lo" onclick="pickMode('lo')">仅小写</button>
+  </div>
+  <button class="btn-go" onclick="begin()">开始寻宝</button>
+</div>
+
+<div id="game" class="screen">
+  <div class="game-header">
+    <div class="hdr-left">
+      <button class="hdr-back" onclick="goHome()">←</button>
+      <div class="hdr-letter" id="hdrLetter">Aa</div>
+    </div>
+    <div class="hdr-right">
+      <span class="star">⭐</span><span id="hdrStars">0</span>
+      <span id="hdrIdx">1/26</span>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progBar" style="width:0%"></div></div>
+  <div class="play-area" id="playArea">
+    <div class="center-target" id="center">
+      <div class="center-circle">
+        <div class="center-U" id="cU">A</div>
+        <div class="center-L" id="cL">a</div>
+      </div>
+      <div class="center-label">👆 在周围找到它们</div>
+    </div>
+  </div>
+  <div class="status-bar">
+    <div class="status-found">已找到 <b id="sFound">0</b> / <span id="sTotal">0</span></div>
+    <div class="status-btns">
+      <button class="status-btn btn-hint" id="btnHint" onclick="hint()">💡 提示</button>
+      <button class="status-btn btn-skip" onclick="skip()">跳过 →</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+var ABC="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var mode="both", idx=0, stars=0, hints=3, found=0, total=0, targets=[];
+
+function pickMode(m){
+  mode=m;
+  var chips=document.querySelectorAll(".mode-chip");
+  for(var i=0;i<chips.length;i++){
+    chips[i].classList.toggle("on",chips[i].getAttribute("data-m")===m);
+  }
+}
+
+function begin(){
+  document.getElementById("home").classList.remove("active");
+  document.getElementById("game").classList.add("active");
+  idx=0; stars=0; hints=3;
+  updStars();
+  build();
+}
+
+function goHome(){
+  document.getElementById("game").classList.remove("active");
+  document.getElementById("home").classList.add("active");
+}
+
+function build(){
+  var area=document.getElementById("playArea");
+  var old=area.querySelectorAll(".bubble");
+  for(var i=0;i<old.length;i++) old[i].remove();
+
+  var L=ABC[idx], l=L.toLowerCase();
+  var needUp=mode!=="lo", needLo=mode!=="up";
+  var upN=needUp?(needLo?3:5):0;
+  var loN=needLo?(needUp?3:5):0;
+  total=upN+loN; found=0; targets=[];
+
+  var disp;
+  if(mode==="up") disp=L;
+  else if(mode==="lo") disp=l;
+  else disp=L+l;
+  document.getElementById("hdrLetter").textContent=disp;
+  document.getElementById("hdrIdx").textContent=(idx+1)+"/26";
+  document.getElementById("progBar").style.width=(idx/26*100)+"%";
+
+  var cU=document.getElementById("cU"), cL=document.getElementById("cL");
+  if(mode==="up"){ cU.textContent=L; cU.style.display=""; cL.style.display="none"; }
+  else if(mode==="lo"){ cU.style.display="none"; cL.textContent=l; cL.style.display=""; }
+  else { cU.textContent=L; cU.style.display=""; cL.textContent=l; cL.style.display=""; }
+
+  document.getElementById("sFound").textContent="0";
+  document.getElementById("sTotal").textContent=total;
+  var hb=document.getElementById("btnHint");
+  hb.classList.remove("off");
+  hb.textContent="💡 提示 "+hints;
+
+  var pool=[];
+  for(var i=0;i<upN;i++) pool.push({ch:L,t:1,up:1});
+  for(var i=0;i<loN;i++) pool.push({ch:l,t:1,up:0});
+  for(var i=0;i<24;i++){
+    var d; do{d=Math.floor(Math.random()*26);}while(d===idx);
+    var isUp=Math.random()>0.45;
+    pool.push({ch:isUp?ABC[d]:ABC[d].toLowerCase(),t:0,up:isUp?1:0});
+  }
+  pool.sort(function(){return Math.random()-0.5;});
+
+  var rc=area.getBoundingClientRect();
+  var fw=rc.width, fh=rc.height;
+  var cx=fw/2, cy=fh/2, safeR=Math.min(fw,fh)*0.24+25;
+  var placed=[];
+
+  for(var pi=0;pi<pool.length;pi++){
+    var item=pool[pi];
+    var el=document.createElement("div");
+    el.className="bubble "+(item.up?"up":"lo");
+    el.setAttribute("data-t",item.t?"1":"0");
+    el.textContent=item.ch;
+
+    var sz=item.up?68:58;
+    var x=0,y=0,ok=false;
+    for(var a=0;a<120&&!ok;a++){
+      x=4+Math.random()*(fw-sz-8);
+      y=4+Math.random()*(fh-sz-12);
+      var dx=(x+sz/2)-cx, dy=(y+sz/2)-cy;
+      if(Math.sqrt(dx*dx+dy*dy)<safeR) continue;
+      ok=true;
+      for(var j=0;j<placed.length;j++){
+        if(Math.abs(x-placed[j].x)<sz+4&&Math.abs(y-placed[j].y)<sz+4){ok=false;break;}
+      }
+    }
+    if(!ok){x=Math.random()*(fw-sz);y=Math.random()*(fh-sz);}
+
+    el.style.left=x+"px"; el.style.top=y+"px";
+    var rot=(Math.random()-0.5)*18;
+    el.style.transform="rotate("+rot+"deg)";
+    el.setAttribute("data-r",rot);
+    placed.push({x:x,y:y});
+
+    (function(elem){
+      elem.addEventListener("click",function(){tap(elem);});
+      elem.addEventListener("touchstart",function(e){e.preventDefault();tap(elem);},{passive:false});
+    })(el);
+
+    area.appendChild(el);
+    if(item.t) targets.push(el);
+  }
+}
+
+function tap(el){
+  if(el.classList.contains("hit")||el.classList.contains("miss")) return;
+  if(el.getAttribute("data-t")==="1"){
+    el.classList.add("hit");
+    found++; stars++;
+    updStars();
+    document.getElementById("sFound").textContent=found;
+    spark(el);
+    if(found>=total) setTimeout(win,450);
+  } else {
+    el.classList.add("miss");
+    var r=el.getAttribute("data-r");
+    setTimeout(function(){el.classList.remove("miss");el.style.transform="rotate("+r+"deg)";},350);
+  }
+}
+
+function hint(){
+  if(hints<=0) return;
+  var left=[];
+  for(var i=0;i<targets.length;i++){
+    if(!targets[i].classList.contains("hit")) left.push(targets[i]);
+  }
+  if(!left.length) return;
+  hints--;
+  var hb=document.getElementById("btnHint");
+  hb.textContent="💡 提示 "+hints;
+  if(hints<=0) hb.classList.add("off");
+  var pick=left[Math.floor(Math.random()*left.length)];
+  pick.style.background="#fff3cd"; pick.style.color="#856404";
+  pick.style.transform="scale(1.2)";
+  setTimeout(function(){
+    if(!pick.classList.contains("hit")){
+      pick.style.background=""; pick.style.color="";
+      pick.style.transform="rotate("+pick.getAttribute("data-r")+"deg)";
+    }
+  },1100);
+}
+
+function skip(){
+  idx++;
+  if(idx>=26) idx=0;
+  build();
+}
+
+function win(){
+  var L=ABC[idx], l=L.toLowerCase();
+  var disp=mode==="up"?L:mode==="lo"?l:L+l;
+  var msgs=["太棒了！","找到啦！","好厉害！","真聪明！","漂亮！"];
+  var msg=msgs[Math.floor(Math.random()*msgs.length)];
+
+  var html="<div class=\"modal-letter\">"+disp+"</div>";
+  html+="<div class=\"modal-stars\">⭐⭐⭐</div>";
+  html+="<div class=\"modal-msg\">"+msg+"</div>";
+
+  if(idx>=25){
+    html+="<div class=\"final-score\">全部完成！⭐ "+stars+"</div>";
+    html+="<button class=\"btn-modal\" onclick=\"restart()\">再来一次</button>";
+  } else {
+    html+="<button class=\"btn-modal\" onclick=\"nextL()\">下一个 →</button>";
+  }
+  document.getElementById("modal").innerHTML=html;
+  document.getElementById("overlay").classList.add("show");
+}
+
+function nextL(){
+  document.getElementById("overlay").classList.remove("show");
+  idx++;
+  hints=Math.min(hints+1,3);
+  build();
+}
+
+function restart(){
+  document.getElementById("overlay").classList.remove("show");
+  idx=0; stars=0; hints=3;
+  updStars();
+  build();
+}
+
+function updStars(){
+  document.getElementById("hdrStars").textContent=stars;
+}
+
+function spark(el){
+  var r=el.getBoundingClientRect();
+  var cx=r.left+r.width/2, cy=r.top+r.height/2;
+  var icons=["✨","⭐","💫","🌟"];
+  for(var i=0;i<4;i++){
+    var s=document.createElement("div");
+    s.className="sparkle";
+    s.textContent=icons[i%icons.length];
+    s.style.left=cx+"px"; s.style.top=cy+"px";
+    var a=Math.PI/2*i+Math.random()*0.5;
+    var d=40+Math.random()*50;
+    s.style.setProperty("--tx",Math.cos(a)*d+"px");
+    s.style.setProperty("--ty",Math.sin(a)*d+"px");
+    document.body.appendChild(s);
+    setTimeout(function(el){el.remove();},800,s);
+  }
+}
+
+var rt;
+window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(function(){if(document.getElementById("game").classList.contains("active"))build();},300);});
+</script>
+</body>
+</html>
